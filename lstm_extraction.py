@@ -2,6 +2,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
+from scipy.signal import butter
+from scipy.signal import filtfilt
+
 from keras.models import Sequential
 from keras.models import load_model
 from keras.layers import Dense
@@ -11,7 +14,7 @@ from keras.layers import Activation
 
 import os
 
-def get_data():
+def get_data() -> "tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]":
     df = pd.read_excel('./Data/Lay_Up_without_anything_Test_1_John.xlsx', header=None, usecols='B')
     data = df.values
     
@@ -19,7 +22,7 @@ def get_data():
     data = (data - data.min()) / (data.max() - data.min())
 
     # split into train and test dataset
-    train_size = int(round(0.9 * len(data)))
+    train_size = int(round(5 / 30 * len(data)))
     train, test = data[:train_size, :], data[train_size:, :]
     x_train, y_train = create_dataset(train)
     x_test, y_test = create_dataset(test)
@@ -28,7 +31,7 @@ def get_data():
 
     return x_train, y_train, x_test, y_test
 
-def create_dataset(dataset):
+def create_dataset(dataset) -> "tuple[np.ndarray, np.ndarray]":
     x, y = [], []
     for i in np.arange(len(dataset)-2):
         x.append(dataset[i:(i+1), 0])
@@ -46,16 +49,33 @@ def get_model() -> Sequential:
     model.compile(optimizer='rmsprop', loss='mse')
     return model
 
-def predict_signal(model, x_test):
+def predict_signal(model, x_test) -> np.ndarray:
     predict = model.predict(x_test)
     predict = np.reshape(predict, (predict.size,))
     return predict
 
 def plot_graph(y_test, predict) -> None:
     plt.plot(y_test, 'b', label="True Data")    
-    plt.plot(predict, 'r', label="Prediction")
+    plt.plot(predict, 'm', label="Prediction")
+    plt.title(f"PREDICT HR {extract_hr(predict)} RR {extract_rr(predict)}")
     plt.legend()
     plt.show()
+
+def extract_hr(predict) -> int:
+    b, a = butter(N=1, Wn=[0.83, 2.5], btype='bandpass', fs=5000)
+    y = filtfilt(b, a, predict)
+    y = abs(np.fft.fft(y))
+    f = np.fft.fftfreq(y.size, d=1/5000)
+    hr = int(round(60*f[y.argmax()]))
+    return hr
+
+def extract_rr(predict) -> int:
+    b, a = butter(N=1, Wn=[0.14, 0.58], btype='bandpass', fs=5000)
+    y = filtfilt(b, a, predict)
+    y = abs(np.fft.fft(y))
+    f = np.fft.fftfreq(y.size, d=1/5000)
+    rr = int(round(60*f[y.argmax()]))
+    return rr
 
 if __name__ == '__main__':
     x_train, y_train, x_test, y_test = get_data()
