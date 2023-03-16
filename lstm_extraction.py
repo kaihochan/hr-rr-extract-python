@@ -66,7 +66,7 @@ def extract_hr(predict) -> int:
     y = filtfilt(b, a, predict)
     y = abs(np.fft.fft(y))
     f = np.fft.fftfreq(y.size, d=1/5000)
-    hr = int(round(60*f[y.argmax()]))
+    hr = abs(int(round(60*f[y.argmax()])))
     return hr
 
 def extract_rr(predict) -> int:
@@ -74,7 +74,7 @@ def extract_rr(predict) -> int:
     y = filtfilt(b, a, predict)
     y = abs(np.fft.fft(y))
     f = np.fft.fftfreq(y.size, d=1/5000)
-    rr = int(round(60*f[y.argmax()]))
+    rr = abs(int(round(60*f[y.argmax()])))
     return rr
 
 if __name__ == '__main__':
