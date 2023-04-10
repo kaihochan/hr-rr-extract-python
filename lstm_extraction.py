@@ -22,7 +22,7 @@ def get_data() -> "tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]":
     data = (data - data.min()) / (data.max() - data.min())
 
     # split into train and test dataset
-    train_size = int(round(5 / 30 * len(data)))
+    train_size = int(round(2 / 3 * len(data)))
     train, test = data[:train_size, :], data[train_size:, :]
     x_train, y_train = create_dataset(train)
     x_test, y_test = create_dataset(test)
@@ -57,7 +57,7 @@ def predict_signal(model, x_test) -> np.ndarray:
 def plot_graph(y_test, predict) -> None:
     plt.plot(y_test, 'b', label="True Data")    
     plt.plot(predict, 'm', label="Prediction")
-    plt.title(f"PREDICT HR {extract_hr(predict)} RR {extract_rr(predict)}")
+    plt.title("LSTM predicted sequence and orginal sequence")
     plt.legend()
     plt.show()
 
@@ -82,5 +82,6 @@ if __name__ == '__main__':
     model = get_model()
     model.fit(x_train, y_train, batch_size=512, epochs=1, validation_split=0.05)
     predict = predict_signal(model, x_test)
+    print(f"PREDICT HR {extract_hr(predict)} RR {extract_rr(predict)}")
     plot_graph(y_test, predict)
 
