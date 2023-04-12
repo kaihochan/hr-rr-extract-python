@@ -15,7 +15,7 @@ from keras.layers import Activation
 import os
 
 def get_data() -> "tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]":
-    df = pd.read_excel('./Data/Lay_Up_without_anything_Test_1_John.xlsx', header=None, usecols='B')
+    df = pd.read_excel('./Data/Sample Data.xlsx', header=None, usecols='B')
     data = df.values
     
     # normalise the data in a feature scale of [0, 1]
@@ -82,6 +82,6 @@ if __name__ == '__main__':
     model = get_model()
     model.fit(x_train, y_train, batch_size=512, epochs=1, validation_split=0.05)
     predict = predict_signal(model, x_test)
-    print(f"PREDICT HR {extract_hr(predict)} RR {extract_rr(predict)}")
+    print(f"PREDICT RESULT\n HR: {extract_hr(predict)} RR: {extract_rr(predict)}")
     plot_graph(y_test, predict)
 
